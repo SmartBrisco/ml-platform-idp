@@ -100,3 +100,37 @@ jobs:
         run: |
           cosign sign --yes \
           ${{ needs.build.outputs.image }}
+
+  # -----------------------------------------
+  # AUDIT LOG
+  # -----------------------------------------
+  audit:
+    name: Audit Log
+    needs: [build, scan, sign]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Write audit record to S3
+        run: |
+          cat > audit-record.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "actor": "${{ github.actor }}",
+            "image": "${{ needs.build.outputs.image }}",
+            "build_status": "${{ needs.build.result }}",
+            "scan_status": "${{ needs.scan.result }}",
+            "sign_status": "${{ needs.sign.result }}",
+            "run_id": "${{ github.run_id }}",
+            "repository": "${{ github.repository }}"
+          }
+          EOF
+          aws s3 cp audit-record.json \
+          s3://gitops-infra-pipeline-tfstate/ml-platform-audit/${{ github.sha }}.json          
