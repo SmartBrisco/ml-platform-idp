@@ -49,29 +49,3 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Notify Slack - Success
-        if: success()
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_DEPLOYMENTS }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          -d "{\"text\":\"✅ *ML Platform Image Built and Pushed*\n*Image:* ${{ steps.build.outputs.image }}\n*Commit:* ${{ github.sha }}\n*Triggered by:* ${{ github.actor }}\"}" \
-          "$SLACK_WEBHOOK"
-
-      - name: Notify Slack - Failure
-        if: failure()
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_ALERTS }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          -d "{\"text\":\"🚨 *ML Platform Build Failed*\n*Commit:* ${{ github.sha }}\n*Triggered by:* ${{ github.actor }}\n*Details:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
-          "$SLACK_WEBHOOK"
-
-      - name: Notify Slack - Audit
-        if: always()
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_AUDIT }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          -d "{\"text\":\"📋 *Audit Log - ML Platform Build*\n*Status:* ${{ job.status }}\n*Commit:* ${{ github.sha }}\n*Triggered by:* ${{ github.actor }}\n*Run ID:* ${{ github.run_id }}\"}" \
-          "$SLACK_WEBHOOK"
