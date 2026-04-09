@@ -22,7 +22,6 @@ Git push → GitHub Actions CI Pipeline
     └── Repository dispatch → argo-event-pipeline
             └── Argo Events → Argo Workflow → Deploy to cluster
 ```
-
 ## Environment Strategy
 
 | Environment | Trivy Threshold | Replicas | Debug |
