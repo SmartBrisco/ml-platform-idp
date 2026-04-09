@@ -1,0 +1,73 @@
+name: ML Platform IDP Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 250830191837.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: ml-platform-idp
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+
+  # -----------------------------------------
+  # BUILD AND PUSH
+  # -----------------------------------------
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker image
+        id: build
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack - Success
+        if: success()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_DEPLOYMENTS }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          -d "{\"text\":\"✅ *ML Platform Image Built and Pushed*\n*Image:* ${{ steps.build.outputs.image }}\n*Commit:* ${{ github.sha }}\n*Triggered by:* ${{ github.actor }}\"}" \
+          "$SLACK_WEBHOOK"
+
+      - name: Notify Slack - Failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_ALERTS }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          -d "{\"text\":\"🚨 *ML Platform Build Failed*\n*Commit:* ${{ github.sha }}\n*Triggered by:* ${{ github.actor }}\n*Details:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+          "$SLACK_WEBHOOK"
+
+      - name: Notify Slack - Audit
+        if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK
