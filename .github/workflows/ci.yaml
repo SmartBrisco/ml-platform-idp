@@ -70,4 +70,8 @@ jobs:
       - name: Notify Slack - Audit
         if: always()
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_AUDIT }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          -d "{\"text\":\"📋 *Audit Log - ML Platform Build*\n*Status:* ${{ job.status }}\n*Commit:* ${{ github.sha }}\n*Triggered by:* ${{ github.actor }}\n*Run ID:* ${{ github.run_id }}\"}" \
+          "$SLACK_WEBHOOK"
