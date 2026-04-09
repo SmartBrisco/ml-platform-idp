@@ -1,0 +1,5 @@
+1. Get the application URL by running:
+  kubectl port-forward svc/{{ include "ml-platform.fullname" . }} 8000:8000 -n {{ .Release.Namespace }}
+
+2. Access the health endpoint:
+  http://localhost:8000/health/
