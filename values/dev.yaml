@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: ml-platform-idp
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 256Mi
+  requests:
+    cpu: 125m
+    memory: 128Mi
+
+env:
+  DJANGO_SETTINGS_MODULE: app.settings
+  DEBUG: "true"
+  ALLOWED_HOSTS: "*"

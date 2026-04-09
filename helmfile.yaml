@@ -1,0 +1,17 @@
+environments:
+  dev:
+    values:
+      - values/dev.yaml
+  test:
+    values:
+      - values/test.yaml
+
+---
+
+releases:
+  - name: ml-platform
+    namespace: ml-platform-{{ .Environment.Name }}
+    createNamespace: true
+    chart: ./ml-platform
+    values:
+      - values/{{ .Environment.Name }}.yaml
