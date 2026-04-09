@@ -133,4 +133,12 @@ jobs:
           }
           EOF
           aws s3 cp audit-record.json \
-          s3://gitops-infra-pipeline-tfstate/ml-platform-audit/${{ github.sha }}.json          
+          s3://gitops-infra-pipeline-tfstate/ml-platform-audit/${{ github.sha }}.json     
+
+      - name: Trigger Argo Events Pipeline
+        run: |
+          curl -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+          https://api.github.com/repos/SmartBrisco/argo-event-pipeline/dispatches \
+          -d '{"event_type":"image-built","client_payload":{"image":"${{ needs.build.outputs.image }}","commit":"${{ github.sha }}"}}'
