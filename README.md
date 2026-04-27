@@ -186,4 +186,4 @@ In a fully validated environment, Trivy scan reports and Cosign signatures would
 - [gitops-infra-pipeline](https://github.com/SmartBrisco/gitops-infra-pipeline) — Infrastructure provisioning via Terraform
 - [platform-observability](https://github.com/SmartBrisco/platform-observability) — Unified observability stack
 - [namespace-provisioner](https://github.com/SmartBrisco/namespace-provisioner) — Kubernetes operator for namespace governance
-- [Platform](https://github.com/SmartBrisco/Platform) — Bootstrap all projects with a single command
+- [Internal-Developler-Platform](https://github.com/SmartBrisco/Platform) — Bootstrap all projects with a single command
